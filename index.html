@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RajBike — Premium Motorcycle Portal & Test Ride Booking</title>
+    <meta name="description" content="Explore top motorcycle brands like Royal Enfield, Bajaj, KTM, Hero, Yamaha, and TVS. Book test rides instantly, calculate EMIs, and compare specs on RajBike.">
+    <meta name="keywords" content="RajBike, Bullet 350, KTM Duke, Bajaj Pulsar, Hero Splendor, Test Ride, Motorcycle EMI Calculator">
+    
+    <!-- Open Graph / Social Media Meta -->
+    <meta property="og:title" content="RajBike — Premium Motorcycle Portal">
+    <meta property="og:description" content="Book test rides, calculate bike EMIs, and explore detailed specs of top motorcycle brands.">
+    <meta property="og:type" content="website">
+
+    <!-- Preconnect Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#FF5500',
+                            orangeDark: '#D44400',
+                            dark: '#0B0F17',
+                            card: '#141A26',
+                            cardBorder: '#232D3F',
+                            textMuted: '#94A3B8'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                    },
+                    keyframes: {
+                        slideIn: {
+                            '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    },
+                    animation: {
+                        'toast-slide': 'slideIn 0.3s ease-out forwards'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Print Stylesheet Fix for Booking Slip */
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+            #printableSlip, #printableSlip * {
+                visibility: visible !important;
+            }
+            #printableSlip {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                padding: 20px !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            #printableSlip button, #printableSlip .no-print {
+                display: none !important;
+            }
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0B0F17;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #232D3F;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #FF5500;
+        }
+    </style>
+</head>
+<body class="bg-brand-dark text-slate-100 font-sans custom-scrollbar antialiased selection:bg-brand-orange selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-brand-dark/90 backdrop-blur-md border-b border-brand-cardBorder">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Brand Logo -->
+            <a href="#" class="flex items-center gap-2 group">
+                <div class="w-10 h-10 rounded-lg bg-brand-orange flex items-center justify-center text-black font-orbitron font-extrabold text-2xl group-hover:scale-105 transition-transform">
+                    R
+                </div>
+                <span class="font-orbitron font-extrabold text-2xl tracking-wider text-white">RAJ<span class="text-brand-orange">BIKE</span></span>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold tracking-wide">
+                <a href="#" class="text-brand-orange hover:text-brand-orange transition-colors">HOME</a>
+                <a href="#bikes" class="text-slate-300 hover:text-brand-orange transition-colors">BIKES</a>
+                <a href="#emi-calc" class="text-slate-300 hover:text-brand-orange transition-colors">EMI CALCULATOR</a>
+                <a href="#testimonials" class="text-slate-300 hover:text-brand-orange transition-colors">REVIEWS</a>
+                <a href="#about" class="text-slate-300 hover:text-brand-orange transition-colors">ABOUT</a>
+            </nav>
+
+            <!-- Header Action Button -->
+            <div class="hidden md:flex items-center gap-4">
+                <button onclick="openBookingModal()" class="px-5 py-2.5 bg-brand-orange hover:bg-brand-orangeDark text-white font-semibold text-sm rounded-md transition-all shadow-lg shadow-brand-orange/20 active:scale-95 flex items-center gap-2">
+                    <i class="fa-solid fa-motorcycle" aria-hidden="true"></i>
+                    <span>BOOK RIDE</span>
+                </button>
+            </div>
+
+            <!-- Mobile Hamburger Button -->
+            <button id="mobileMenuBtn" aria-label="Toggle Mobile Navigation Menu" aria-expanded="false" class="md:hidden p-2 text-slate-300 hover:text-white text-2xl focus:outline-none">
+                <i class="fa-solid fa-bars" id="menuIcon"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Drawer Navigation -->
+        <div id="mobileMenu" class="hidden md:hidden bg-brand-card border-b border-brand-cardBorder px-6 py-6 space-y-4">
+            <a href="#" onclick="closeMobileMenu()" class="block text-brand-orange font-semibold py-1">HOME</a>
+            <a href="#bikes" onclick="closeMobileMenu()" class="block text-slate-300 hover:text-brand-orange font-semibold py-1">BIKES</a>
+            <a href="#emi-calc" onclick="closeMobileMenu()" class="block text-slate-300 hover:text-brand-orange font-semibold py-1">EMI CALCULATOR</a>
+            <a href="#testimonials" onclick="closeMobileMenu()" class="block text-slate-300 hover:text-brand-orange font-semibold py-1">REVIEWS</a>
+            <a href="#about" onclick="closeMobileMenu()" class="block text-slate-300 hover:text-brand-orange font-semibold py-1">ABOUT</a>
+            <button onclick="closeMobileMenu(); openBookingModal()" class="w-full mt-4 py-3 bg-brand-orange text-white font-bold rounded-md">
+                BOOK TEST RIDE
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="relative min-h-[85vh] flex items-center justify-center overflow-hidden border-b border-brand-cardBorder">
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=1600&auto=format&fit=crop')] bg-cover bg-center"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-brand-dark via-brand-dark/90 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-brand-dark/50"></div>
+
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full grid md:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-xs font-bold tracking-widest uppercase">
+                        <i class="fa-solid fa-bolt" aria-hidden="true"></i> PREMIUM TWO-WHEELER HUB
+                    </div>
+                    <h1 class="font-orbitron text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight uppercase">
+                        RIDE THE <span class="text-brand-orange">THRILL</span> & LEGEND
+                    </h1>
+                    <p class="text-brand-textMuted text-base sm:text-lg max-w-xl font-normal leading-relaxed">
+                        Explore India's finest lineup of iconic motorcycles — Royal Enfield Bullet, KTM Duke, Bajaj Pulsar, Hero Splendor, Yamaha & TVS. Compare specs, estimate EMIs, and book test rides seamlessly.
+                    </p>
+
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <a href="#bikes" class="px-7 py-3.5 bg-brand-orange hover:bg-brand-orangeDark text-white font-bold text-sm tracking-wide rounded-md transition-all shadow-xl shadow-brand-orange/25 flex items-center gap-2">
+                            <span>EXPLORE FLEET</span>
+                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                        <a href="#emi-calc" class="px-7 py-3.5 bg-brand-card hover:bg-brand-cardBorder text-slate-200 border border-brand-cardBorder font-bold text-sm tracking-wide rounded-md transition-all">
+                            CALCULATE EMI
+                        </a>
+                    </div>
+
+                    <!-- Quick Metrics -->
+                    <div class="pt-8 grid grid-cols-3 gap-6 border-t border-brand-cardBorder/60">
+                        <div>
+                            <div class="font-orbitron font-extrabold text-2xl text-white">50+</div>
+                            <div class="text-xs text-brand-textMuted font-medium mt-0.5">Models Available</div>
+                        </div>
+                        <div>
+                            <div class="font-orbitron font-extrabold text-2xl text-brand-orange">4.9 ★</div>
+                            <div class="text-xs text-brand-textMuted font-medium mt-0.5">Customer Rating</div>
+                        </div>
+                        <div>
+                            <div class="font-orbitron font-extrabold text-2xl text-white">100%</div>
+                            <div class="text-xs text-brand-textMuted font-medium mt-0.5">Verified Fleet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Brand Filter & Bikes Fleet Grid -->
+        <section id="bikes" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center space-y-3 mb-12">
+                <h2 class="font-orbitron text-3xl sm:text-4xl font-extrabold text-white tracking-wide">
+                    OUR <span class="text-brand-orange">MOTORCYCLE</span> FLEET
+                </h2>
+                <p class="text-brand-textMuted max-w-xl mx-auto text-sm sm:text-base">
+                    Filter by brand, search by model, or sort according to your budget preferences.
+                </p>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="bg-brand-card border border-brand-cardBorder p-4 sm:p-6 rounded-xl space-y-4 mb-10 shadow-xl">
+                <!-- Search & Sort Row -->
+                <div class="grid sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-brand-textMuted" aria-hidden="true"></i>
+                        <input type="text" id="searchInput" oninput="renderBikes()" placeholder="Search bike model (e.g. Bullet, Duke, Pulsar)..." class="w-full bg-brand-dark border border-brand-cardBorder text-white pl-11 pr-4 py-3 rounded-lg text-sm focus:outline-none focus:border-brand-orange">
+                    </div>
+                    <div>
+                        <select id="sortSelect" onchange="renderBikes()" class="w-full bg-brand-dark border border-brand-cardBorder text-white px-4 py-3 rounded-lg text-sm focus:outline-none focus:border-brand-orange cursor-pointer">
+                            <option value="default">Sort By: Featured</option>
+                            <option value="price-asc">Price: Low to High</option>
+                            <option value="price-desc">Price: High to Low</option>
+                            <option value="mileage-desc">Highest Mileage</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Brand Filter Pills -->
+                <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-brand-cardBorder/60" id="brandFilterContainer">
+                    <!-- Dynamic Buttons Generated via JS -->
+                </div>
+            </div>
+
+            <!-- Bike Cards Grid -->
+            <div id="bikeGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Cards Injected via JS -->
+            </div>
+
+            <div id="noResults" class="hidden text-center py-16 space-y-3">
+                <i class="fa-solid fa-motorcycle text-5xl text-brand-cardBorder" aria-hidden="true"></i>
+                <p class="text-lg font-semibold text-slate-400">No bikes match your search or filter criteria.</p>
+                <button onclick="resetFilters()" class="text-brand-orange underline text-sm font-bold">Reset Filters</button>
+            </div>
+        </section>
+
+        <!-- Interactive EMI Calculator -->
+        <section id="emi-calc" class="py-20 bg-brand-card/40 border-y border-brand-cardBorder relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid lg:grid-cols-12 gap-12 items-center">
+                    
+                    <!-- Left Column: Controls -->
+                    <div class="lg:col-span-7 space-y-8">
+                        <div>
+                            <div class="text-brand-orange font-bold text-xs tracking-widest uppercase mb-1">FINANCE ASSISTANT</div>
+                            <h2 class="font-orbitron text-3xl font-bold text-white">SMART EMI CALCULATOR</h2>
+                            <p class="text-brand-textMuted text-sm mt-2">Estimate monthly payments accurately based on vehicle price and interest rates.</p>
+                        </div>
+
+                        <!-- Bike Select Dropdown -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Select Bike Model</label>
+                            <select id="emiBikeSelect" onchange="updateEmiBikeChoice()" class="w-full bg-brand-card border border-brand-cardBorder text-white px-4 py-3 rounded-lg text-sm focus:outline-none focus:border-brand-orange font-medium">
+                                <!-- Generated dynamically -->
+                            </select>
+                        </div>
+
+                        <!-- Down Payment Slider -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-300 font-semibold">Down Payment</span>
+                                <span id="downPaymentValue" class="text-brand-orange font-orbitron font-bold">₹30,000</span>
+                            </div>
+                            <input type="range" id="downPaymentRange" min="5000" max="200000" step="2000" value="30000" oninput="calculateEMI()" class="w-full accent-brand-orange bg-brand-cardBorder h-2 rounded-lg cursor-pointer">
+                        </div>
+
+                        <!-- Loan Tenure Slider -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-300 font-semibold">Loan Tenure</span>
+                                <span id="tenureValue" class="text-brand-orange font-orbitron font-bold">36 Months</span>
+                            </div>
+                            <input type="range" id="tenureRange" min="12" max="60" step="6" value="36" oninput="calculateEMI()" class="w-full accent-brand-orange bg-brand-cardBorder h-2 rounded-lg cursor-pointer">
+                        </div>
+
+                        <!-- Interest Rate Slider -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-300 font-semibold">Interest Rate (p.a)</span>
+                                <span id="interestValue" class="text-brand-orange font-orbitron font-bold">9.5%</span>
+                            </div>
+                            <input type="range" id="interestRange" min="6" max="18" step="0.5" value="9.5" oninput="calculateEMI()" class="w-full accent-brand-orange bg-brand-cardBorder h-2 rounded-lg cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Result Summary Card -->
+                    <div class="lg:col-span-5 bg-brand-card border border-brand-cardBorder p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+                        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-brand-orange/10 rounded-full blur-3xl pointer-events-none"></div>
+                        
+                        <h3 class="font-orbitron text-lg font-bold text-white border-b border-brand-cardBorder pb-4 mb-6">LOAN BREAKDOWN</h3>
+                        
+                        <div class="space-y-5">
+                            <div>
+                                <span class="text-xs text-brand-textMuted uppercase font-bold tracking-wider">Estimated Monthly EMI</span>
+                                <div id="emiResultAmount" class="font-orbitron text-4xl font-black text-brand-orange mt-1">₹0</div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 pt-4 border-t border-brand-cardBorder/60 text-sm">
+                                <div>
+                                    <span class="text-xs text-brand-textMuted block">Principal Amount</span>
+                                    <span id="emiPrincipal" class="font-bold text-white">₹0</span>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-brand-textMuted block">Total Interest Payable</span>
+                                    <span id="emiTotalInterest" class="font-bold text-slate-300">₹0</span>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-brand-textMuted block">Total Amount Payable</span>
+                                    <span id="emiTotalPayable" class="font-bold text-slate-300">₹0</span>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-brand-textMuted block">Ex-Showroom Price</span>
+                                    <span id="emiBikePrice" class="font-bold text-slate-300">₹0</span>
+                                </div>
+                            </div>
+
+                            <button onclick="triggerEmiBooking()" class="w-full py-3.5 bg-brand-orange hover:bg-brand-orangeDark text-white font-bold rounded-lg transition-all shadow-lg shadow-brand-orange/20 mt-4">
+                                APPLY LOAN & BOOK RIDE
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Customer Reviews Section -->
+        <section id="testimonials" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center space-y-3 mb-12">
+                <h2 class="font-orbitron text-3xl font-bold text-white">
+                    WHAT OUR <span class="text-brand-orange">RIDER COMMUNITY</span> SAYS
+                </h2>
+                <p class="text-brand-textMuted text-sm sm:text-base">Real experiences from riders who booked through RajBike.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-brand-card border border-brand-cardBorder p-6 rounded-xl space-y-4">
+                    <div class="flex items-center gap-1 text-brand-orange text-sm">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        "Booked a test ride for Royal Enfield Bullet 350. The process was incredibly smooth and the staff helped me clear my EMI doubts on the spot."
+                    </p>
+                    <div class="flex items-center gap-3 pt-2 border-t border-brand-cardBorder/60">
+                        <div class="w-10 h-10 rounded-full bg-brand-orange/20 border border-brand-orange flex items-center justify-center font-bold text-brand-orange">VS</div>
+                        <div>
+                            <div class="text-sm font-bold text-white">Vikas Singh</div>
+                            <div class="text-xs text-brand-textMuted">Jaunpur, UP</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-brand-card border border-brand-cardBorder p-6 rounded-xl space-y-4">
+                    <div class="flex items-center gap-1 text-brand-orange text-sm">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        "The EMI calculator gave me exact numbers without any hidden charges. Got my Pulsar NS200 test ride arranged right at my nearest dealership."
+                    </p>
+                    <div class="flex items-center gap-3 pt-2 border-t border-brand-cardBorder/60">
+                        <div class="w-10 h-10 rounded-full bg-brand-orange/20 border border-brand-orange flex items-center justify-center font-bold text-brand-orange">AK</div>
+                        <div>
+                            <div class="text-sm font-bold text-white">Amit Kumar</div>
+                            <div class="text-xs text-brand-textMuted">Varanasi, UP</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-brand-card border border-brand-cardBorder p-6 rounded-xl space-y-4">
+                    <div class="flex items-center gap-1 text-brand-orange text-sm">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        "RajBike makes comparing specs super simple. Checked KTM Duke 250 specs and booked within 2 minutes. Outstanding service!"
+                    </p>
+                    <div class="flex items-center gap-3 pt-2 border-t border-brand-cardBorder/60">
+                        <div class="w-10 h-10 rounded-full bg-brand-orange/20 border border-brand-orange flex items-center justify-center font-bold text-brand-orange">RP</div>
+                        <div>
+                            <div class="text-sm font-bold text-white">Rahul Patel</div>
+                            <div class="text-xs text-brand-textMuted">Lucknow, UP</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="about" class="bg-brand-card/80 border-t border-brand-cardBorder py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-4 gap-8">
+            <div class="space-y-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded bg-brand-orange flex items-center justify-center text-black font-orbitron font-bold text-lg">R</div>
+                    <span class="font-orbitron font-bold text-xl text-white">RAJ<span class="text-brand-orange">BIKE</span></span>
+                </div>
+                <p class="text-xs text-brand-textMuted leading-relaxed">
+                    India's modern two-wheeler discovery & test ride booking hub. Engineered for enthusiasts who demand performance and clarity.
+                </p>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Quick Navigation</h4>
+                <ul class="space-y-2 text-xs text-brand-textMuted">
+                    <li><a href="#bikes" class="hover:text-brand-orange transition-colors">Our Fleet</a></li>
+                    <li><a href="#emi-calc" class="hover:text-brand-orange transition-colors">EMI Calculator</a></li>
+                    <li><a href="#testimonials" class="hover:text-brand-orange transition-colors">Customer Reviews</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Top Brands</h4>
+                <ul class="space-y-2 text-xs text-brand-textMuted">
+                    <li><a href="#bikes" onclick="filterByBrand('Royal Enfield')" class="hover:text-brand-orange transition-colors">Royal Enfield</a></li>
+                    <li><a href="#bikes" onclick="filterByBrand('KTM')" class="hover:text-brand-orange transition-colors">KTM Bikes</a></li>
+                    <li><a href="#bikes" onclick="filterByBrand('Bajaj')" class="hover:text-brand-orange transition-colors">Bajaj Auto</a></li>
+                    <li><a href="#bikes" onclick="filterByBrand('Hero')" class="hover:text-brand-orange transition-colors">Hero MotoCorp</a></li>
+                </ul>
+            </div>
+
+            <!-- Developer Box -->
+            <div class="bg-brand-dark p-4 rounded-xl border border-brand-cardBorder space-y-2">
+                <div class="text-xs text-brand-orange font-bold uppercase tracking-wider">PLATFORM DEVELOPER</div>
+                <div class="text-sm font-bold text-white">Raj Gautam</div>
+                <p class="text-xs text-brand-textMuted">BCA Student | VBSPU Jaunpur</p>
+                <p class="text-xs text-slate-400 font-mono">Contact: graj13099@gmail.com</p>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-brand-cardBorder/60 flex flex-col sm:flex-row items-center justify-between text-xs text-brand-textMuted gap-4">
+            <div>&copy; 2026 RajBike Inc. Developed by Raj Gautam (VBSPU). All rights reserved.</div>
+            <div class="flex gap-4">
+                <a href="#" class="hover:text-white">Privacy Policy</a>
+                <a href="#" class="hover:text-white">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: Bike Details Modal -->
+    <div id="detailsModal" role="dialog" aria-modal="true" aria-labelledby="detailsModalTitle" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-cardBorder max-w-2xl w-full rounded-2xl overflow-hidden shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeModal('detailsModal')" aria-label="Close Details Modal" class="absolute top-4 right-4 z-10 w-9 h-9 bg-brand-dark/80 hover:bg-brand-orange text-white rounded-full flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div id="detailsModalContent">
+                <!-- Content Populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Test Ride Booking Modal -->
+    <div id="bookingModal" role="dialog" aria-modal="true" aria-labelledby="bookingModalTitle" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-cardBorder max-w-md w-full rounded-2xl p-6 shadow-2xl relative">
+            <button onclick="closeModal('bookingModal')" aria-label="Close Booking Modal" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 id="bookingModalTitle" class="font-orbitron text-xl font-bold text-white mb-1">BOOK TEST RIDE</h3>
+            <p class="text-xs text-brand-textMuted mb-6">Schedule your official ride slot instantly.</p>
+
+            <form id="bookingForm" onsubmit="handleBookingSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Select Bike</label>
+                    <select id="bookingBikeSelect" class="w-full bg-brand-dark border border-brand-cardBorder text-white px-3.5 py-2.5 rounded-lg text-sm focus:outline-none focus:border-brand-orange" required>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Full Name</label>
+                    <input type="text" id="bookingName" minlength="3" placeholder="Enter your full name" class="w-full bg-brand-dark border border-brand-cardBorder text-white px-3.5 py-2.5 rounded-lg text-sm focus:outline-none focus:border-brand-orange" required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Phone Number</label>
+                    <input type="tel" id="bookingPhone" pattern="[0-9]{10}" placeholder="10-digit mobile number" class="w-full bg-brand-dark border border-brand-cardBorder text-white px-3.5 py-2.5 rounded-lg text-sm focus:outline-none focus:border-brand-orange" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Preferred Date</label>
+                        <input type="date" id="bookingDate" class="w-full bg-brand-dark border border-brand-cardBorder text-white px-3 py-2.5 rounded-lg text-xs focus:outline-none focus:border-brand-orange" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Time Slot</label>
+                        <select id="bookingTime" class="w-full bg-brand-dark border border-brand-cardBorder text-white px-3 py-2.5 rounded-lg text-xs focus:outline-none focus:border-brand-orange" required>
+                            <option value="10:00 AM">10:00 AM</option>
+                            <option value="01:00 PM">01:00 PM</option>
+                            <option value="04:00 PM">04:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-brand-orange hover:bg-brand-orangeDark text-white font-bold text-sm rounded-lg shadow-lg shadow-brand-orange/20 mt-2 transition-all">
+                    CONFIRM BOOKING
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Printable Booking Slip Modal -->
+    <div id="slipModal" role="dialog" aria-modal="true" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-cardBorder max-w-lg w-full rounded-2xl p-6 shadow-2xl relative">
+            <button onclick="closeModal('slipModal')" aria-label="Close Confirmation Slip" class="no-print absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <!-- Printable Slip Box -->
+            <div id="printableSlip" class="bg-white text-slate-900 p-6 rounded-xl space-y-4">
+                <div class="flex justify-between items-start border-b border-slate-200 pb-4">
+                    <div>
+                        <div class="font-orbitron font-extrabold text-xl text-slate-900">RAJ<span class="text-orange-600">BIKE</span></div>
+                        <div class="text-[10px] text-slate-500 font-bold tracking-wider uppercase">Official Test Ride Pass</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs font-mono font-bold text-slate-700" id="slipPassId">#RB-0000</div>
+                        <div class="text-[10px] text-slate-500" id="slipCreatedDate">Date</div>
+                    </div>
+                </div>
+
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between py-1 border-b border-slate-100">
+                        <span class="text-slate-500 font-semibold">Rider Name:</span>
+                        <span id="slipRiderName" class="font-bold text-slate-900">Name</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-100">
+                        <span class="text-slate-500 font-semibold">Contact Phone:</span>
+                        <span id="slipPhone" class="font-bold text-slate-900">0000000000</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-100">
+                        <span class="text-slate-500 font-semibold">Motorcycle Model:</span>
+                        <span id="slipBikeName" class="font-bold text-orange-600">Model</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-100">
+                        <span class="text-slate-500 font-semibold">Scheduled Date & Time:</span>
+                        <span id="slipDateTime" class="font-bold text-slate-900">Date @ Time</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 text-[10px] text-slate-500 text-center leading-normal">
+                    Please present this pass along with a valid Driving License at the authorized dealership.
+                </div>
+            </div>
+
+            <!-- Actions Bar -->
+            <div class="no-print mt-6 flex gap-3">
+                <button onclick="window.print()" class="flex-1 py-3 bg-brand-orange hover:bg-brand-orangeDark text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-print"></i> PRINT PASS
+                </button>
+                <button onclick="closeModal('slipModal')" class="px-5 py-3 bg-brand-dark border border-brand-cardBorder text-slate-300 font-bold rounded-lg text-sm hover:bg-brand-cardBorder">
+                    CLOSE
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Database of Bikes
+        const bikesData = [
+            {
+                id: 're-bullet-350',
+                name: 'Royal Enfield Bullet 350',
+                brand: 'Royal Enfield',
+                price: 173562,
+                engine: '349 cc',
+                power: '20.2 bhp @ 6100 rpm',
+                mileage: '37 kmpl',
+                weight: '195 kg',
+                image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=800&auto=format&fit=crop',
+                description: 'The iconic Bullet 350 features J-series engine refinement, classic thump, and unbeatable highway cruising posture.'
+            },
+            {
+                id: 'ktm-duke-250',
+                name: 'KTM Duke 250',
+                brand: 'KTM',
+                price: 239000,
+                engine: '249 cc',
+                power: '31 bhp @ 9250 rpm',
+                mileage: '30 kmpl',
+                weight: '163 kg',
+                image: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=800&auto=format&fit=crop',
+                description: 'Aggressive streetfighter agility powered by liquid cooling, WP Apex suspension, and slipper clutch.'
+            },
+            {
+                id: 'bajaj-pulsar-ns200',
+                name: 'Bajaj Pulsar NS200',
+                brand: 'Bajaj',
+                price: 142000,
+                engine: '199.5 cc',
+                power: '24.5 bhp @ 9750 rpm',
+                mileage: '36 kmpl',
+                weight: '158 kg',
+                image: 'https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?q=80&w=800&auto=format&fit=crop',
+                description: 'Triple spark DTS-i engine with perimeter frame offering explosive acceleration and muscular perimeter styling.'
+            },
+            {
+                id: 'hero-splendor-plus',
+                name: 'Hero Splendor Plus',
+                brand: 'Hero',
+                price: 79911,
+                engine: '97.2 cc',
+                power: '7.9 bhp @ 8000 rpm',
+                mileage: '70 kmpl',
+                weight: '112 kg',
+                image: 'https://images.unsplash.com/photo-1508974239320-0a029497e820?q=80&w=800&auto=format&fit=crop',
+                description: "India's most trusted commuter motorcycle featuring i3S technology and unmatched fuel efficiency."
+            },
+            {
+                id: 'tvs-apache-rtr-160',
+                name: 'TVS Apache RTR 160 4V',
+                brand: 'TVS',
+                price: 124870,
+                engine: '159.7 cc',
+                power: '17.55 bhp @ 9250 rpm',
+                mileage: '45 kmpl',
+                weight: '144 kg',
+                image: 'https://images.unsplash.com/photo-1615172282427-9a57ef2d142e?q=80&w=800&auto=format&fit=crop',
+                description: 'Race-derived O3C engine with ride modes, SmartXonnect Bluetooth telemetry, and wave disc brakes.'
+            },
+            {
+                id: 'yamaha-mt-15',
+                name: 'Yamaha MT-15 V2',
+                brand: 'Yamaha',
+                price: 168000,
+                engine: '155 cc',
+                power: '18.4 bhp @ 10000 rpm',
+                mileage: '48 kmpl',
+                weight: '141 kg',
+                image: 'https://images.unsplash.com/photo-1547549662-77421132e496?q=80&w=800&auto=format&fit=crop',
+                description: 'Dark Warrior aesthetic with Variable Valve Actuation (VVA), USD front forks, and Traction Control System.'
+            }
+        ];
+
+        let currentSelectedBrand = 'ALL';
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', () => {
+            renderBrandButtons();
+            renderBikes();
+            populateEmiDropdown();
+            setupBookingDateLimits();
+            setupModalBackdrops();
+            
+            // ESC key modal listener
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeAllModals();
+                }
+            });
+
+            // Mobile menu toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const menu = document.getElementById('mobileMenu');
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                menu.classList.toggle('hidden');
+                this.setAttribute('aria-expanded', !isExpanded);
+            });
+        });
+
+        function closeMobileMenu() {
+            document.getElementById('mobileMenu').classList.add('hidden');
+            document.getElementById('mobileMenuBtn').setAttribute('aria-expanded', 'false');
+        }
+
+        // Render Brand Filters
+        function renderBrandButtons() {
+            const container = document.getElementById('brandFilterContainer');
+            const brands = ['ALL', 'Royal Enfield', 'KTM', 'Bajaj', 'Hero', 'TVS', 'Yamaha'];
+            
+            container.innerHTML = brands.map(b => `
+                <button onclick="filterByBrand('${b}')" class="brand-btn px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all ${
+                    currentSelectedBrand === b 
+                    ? 'bg-brand-orange text-white' 
+                    : 'bg-brand-dark border border-brand-cardBorder text-slate-400 hover:text-white'
+                }" data-brand="${b}">
+                    ${b}
+                </button>
+            `).join('');
+        }
+
+        function filterByBrand(brand) {
+            currentSelectedBrand = brand;
+            renderBrandButtons();
+            renderBikes();
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('sortSelect').value = 'default';
+            filterByBrand('ALL');
+        }
+
+        // Render Bikes List
+        function renderBikes() {
+            const grid = document.getElementById('bikeGrid');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const sortVal = document.getElementById('sortSelect').value;
+
+            let filtered = bikesData.filter(bike => {
+                const matchesBrand = currentSelectedBrand === 'ALL' || bike.brand === currentSelectedBrand;
+                const matchesSearch = bike.name.toLowerCase().includes(searchVal) || bike.brand.toLowerCase().includes(searchVal);
+                return matchesBrand && matchesSearch;
+            });
+
+            // Sorting logic
+            if (sortVal === 'price-asc') filtered.sort((a,b) => a.price - b.price);
+            if (sortVal === 'price-desc') filtered.sort((a,b) => b.price - a.price);
+            if (sortVal === 'mileage-desc') filtered.sort((a,b) => parseInt(b.mileage) - parseInt(a.mileage));
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                document.getElementById('noResults').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('noResults').classList.add('hidden');
+            grid.innerHTML = filtered.map(bike => `
+                <div class="bg-brand-card border border-brand-cardBorder rounded-xl overflow-hidden hover:border-brand-orange/50 transition-all duration-300 group flex flex-col justify-between shadow-xl">
+                    <div>
+                        <div class="relative h-52 overflow-hidden bg-brand-dark">
+                            <img src="${bike.image}" alt="${bike.name}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute top-3 left-3 bg-brand-dark/90 border border-brand-cardBorder px-2.5 py-1 rounded text-[11px] font-bold text-brand-orange">
+                                ${bike.brand}
+                            </div>
+                        </div>
+
+                        <div class="p-5 space-y-4">
+                            <div>
+                                <h3 class="font-orbitron font-bold text-lg text-white group-hover:text-brand-orange transition-colors">${bike.name}</h3>
+                                <div class="font-orbitron font-extrabold text-xl text-brand-orange mt-1">₹${bike.price.toLocaleString('en-IN')}</div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-xs bg-brand-dark p-3 rounded-lg border border-brand-cardBorder/60">
+                                <div><span class="text-brand-textMuted block">Engine:</span> <strong class="text-slate-200">${bike.engine}</strong></div>
+                                <div><span class="text-brand-textMuted block">Mileage:</span> <strong class="text-slate-200">${bike.mileage}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-5 pt-0 grid grid-cols-2 gap-3">
+                        <button onclick="openDetailsModal('${bike.id}')" class="py-2.5 bg-brand-dark hover:bg-brand-cardBorder text-slate-200 border border-brand-cardBorder text-xs font-bold rounded-lg transition-colors">
+                            SPECS & INFO
+                        </button>
+                        <button onclick="openBookingModal('${bike.id}')" class="py-2.5 bg-brand-orange hover:bg-brand-orangeDark text-white text-xs font-bold rounded-lg transition-colors shadow-md shadow-brand-orange/20">
+                            BOOK RIDE
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // EMI Calculator Logic
+        function populateEmiDropdown() {
+            const select = document.getElementById('emiBikeSelect');
+            select.innerHTML = bikesData.map(b => `<option value="${b.id}">${b.name} — ₹${b.price.toLocaleString('en-IN')}</option>`).join('');
+            updateEmiBikeChoice();
+        }
+
+        function updateEmiBikeChoice() {
+            const bikeId = document.getElementById('emiBikeSelect').value;
+            const bike = bikesData.find(b => b.id === bikeId);
+            if (!bike) return;
+
+            const slider = document.getElementById('downPaymentRange');
+            slider.max = Math.max(10000, bike.price - 10000);
+            if (parseInt(slider.value) > slider.max) {
+                slider.value = Math.floor(bike.price * 0.2);
+            }
+
+            document.getElementById('emiBikePrice').textContent = `₹${bike.price.toLocaleString('en-IN')}`;
+            calculateEMI();
+        }
+
+        function calculateEMI() {
+            const bikeId = document.getElementById('emiBikeSelect').value;
+            const bike = bikesData.find(b => b.id === bikeId);
+            if (!bike) return;
+
+            let downPayment = parseInt(document.getElementById('downPaymentRange').value);
+            downPayment = Math.min(downPayment, bike.price - 10000);
+
+            const tenureMonths = parseInt(document.getElementById('tenureRange').value);
+            const annualInterest = parseFloat(document.getElementById('interestRange').value);
+
+            document.getElementById('downPaymentValue').textContent = `₹${downPayment.toLocaleString('en-IN')}`;
+            document.getElementById('tenureValue').textContent = `${tenureMonths} Months`;
+            document.getElementById('interestValue').textContent = `${annualInterest}%`;
+
+            const principal = bike.price - downPayment;
+            const monthlyRate = (annualInterest / 12) / 100;
+
+            const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) / (Math.pow(1 + monthlyRate, tenureMonths) - 1);
+            const totalPayable = (emi * tenureMonths) + downPayment;
+            const totalInterest = totalPayable - bike.price;
+
+            document.getElementById('emiResultAmount').textContent = `₹${Math.round(emi).toLocaleString('en-IN')}`;
+            document.getElementById('emiPrincipal').textContent = `₹${principal.toLocaleString('en-IN')}`;
+            document.getElementById('emiTotalInterest').textContent = `₹${Math.round(totalInterest).toLocaleString('en-IN')}`;
+            document.getElementById('emiTotalPayable').textContent = `₹${Math.round(totalPayable).toLocaleString('en-IN')}`;
+        }
+
+        function triggerEmiBooking() {
+            const bikeId = document.getElementById('emiBikeSelect').value;
+            openBookingModal(bikeId);
+        }
+
+        // Modal Handlers
+        function openDetailsModal(bikeId) {
+            const bike = bikesData.find(b => b.id === bikeId);
+            if (!bike) return;
+
+            const content = document.getElementById('detailsModalContent');
+            content.innerHTML = `
+                <div class="relative h-64 sm:h-72 bg-brand-dark">
+                    <img src="${bike.image}" alt="${bike.name}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-card via-transparent to-transparent"></div>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div>
+                        <div class="text-brand-orange font-bold text-xs uppercase tracking-widest">${bike.brand}</div>
+                        <h3 id="detailsModalTitle" class="font-orbitron font-bold text-2xl text-white">${bike.name}</h3>
+                        <div class="font-orbitron font-extrabold text-2xl text-brand-orange mt-1">₹${bike.price.toLocaleString('en-IN')} <span class="text-xs font-normal text-slate-400">(Ex-showroom)</span></div>
+                    </div>
+
+                    <p class="text-sm text-slate-300 leading-relaxed">${bike.description}</p>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-brand-dark p-4 rounded-xl border border-brand-cardBorder">
+                        <div><span class="text-[11px] text-brand-textMuted block">Engine</span><strong class="text-sm text-white">${bike.engine}</strong></div>
+                        <div><span class="text-[11px] text-brand-textMuted block">Max Power</span><strong class="text-sm text-white">${bike.power}</strong></div>
+                        <div><span class="text-[11px] text-brand-textMuted block">Mileage</span><strong class="text-sm text-white">${bike.mileage}</strong></div>
+                        <div><span class="text-[11px] text-brand-textMuted block">Kerb Weight</span><strong class="text-sm text-white">${bike.weight}</strong></div>
+                    </div>
+
+                    <button onclick="closeModal('detailsModal'); openBookingModal('${bike.id}')" class="w-full py-3.5 bg-brand-orange hover:bg-brand-orangeDark text-white font-bold rounded-lg shadow-lg shadow-brand-orange/20">
+                        BOOK TEST RIDE FOR THIS MODEL
+                    </button>
+                </div>
+            `;
+            document.getElementById('detailsModal').classList.remove('hidden');
+        }
+
+        function openBookingModal(bikeId = null) {
+            const select = document.getElementById('bookingBikeSelect');
+            select.innerHTML = bikesData.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+            
+            if (bikeId) {
+                select.value = bikeId;
+            }
+            
+            document.getElementById('bookingModal').classList.remove('hidden');
+        }
+
+        function setupBookingDateLimits() {
+            const now = new Date();
+            now.setDate(now.getDate() + 1);
+            const localIsoDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            document.getElementById('bookingDate').min = localIsoDate;
+            document.getElementById('bookingDate').value = localIsoDate;
+        }
+
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+            
+            const bikeId = document.getElementById('bookingBikeSelect').value;
+            const bike = bikesData.find(b => b.id === bikeId);
+            const name = document.getElementById('bookingName').value;
+            const phone = document.getElementById('bookingPhone').value;
+            const date = document.getElementById('bookingDate').value;
+            const time = document.getElementById('bookingTime').value;
+
+            const passId = `RB-${Math.floor(1000 + Math.random() * 9000)}`;
+            document.getElementById('slipPassId').textContent = passId;
+            document.getElementById('slipCreatedDate').textContent = new Date().toLocaleDateString('en-IN');
+            document.getElementById('slipRiderName').textContent = name;
+            document.getElementById('slipPhone').textContent = phone;
+            document.getElementById('slipBikeName').textContent = bike.name;
+            document.getElementById('slipDateTime').textContent = `${date} @ ${time}`;
+
+            closeModal('bookingModal');
+            document.getElementById('slipModal').classList.remove('hidden');
+            showToast(`Test ride scheduled for ${bike.name}!`);
+            
+            document.getElementById('bookingForm').reset();
+            setupBookingDateLimits();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function closeAllModals() {
+            closeModal('detailsModal');
+            closeModal('bookingModal');
+            closeModal('slipModal');
+        }
+
+        function setupModalBackdrops() {
+            ['detailsModal', 'bookingModal', 'slipModal'].forEach(id => {
+                const modal = document.getElementById(id);
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(id);
+                    }
+                });
+            });
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'bg-brand-orange text-white px-5 py-3 rounded-xl shadow-2xl font-semibold text-xs flex items-center gap-2 border border-orange-400 pointer-events-auto animate-toast-slide';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
